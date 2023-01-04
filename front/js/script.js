@@ -10,19 +10,37 @@ fetch("http://localhost:3000/api/products")
     .then((data) => {
         return data.json()
     }).then((completeData) => {
-        let data1 = "";
-        completeData.map((values) => {
-            data1 += `<a href="./product.html?id=42">
-    <article>
-      <img src=${values.imageUrl} alt="Lorem ipsum dolor sit amet, Kanap name1">
-      <h3 class="productName">${values.name}</h3>
-      <p class="productDescription">${values.description}</p>
-    </article>
-  </a>`
+        console.log(completeData);
+        var items = document.getElementById("items")
+
+        //boucle sur tout products (completeData) chaque produit est rangé dans product
+        completeData.forEach(function (product) {
+            console.log(product)
+
+            let baliseA = document.createElement("a")
+            baliseA.setAttribute("href", "./product.html?id=" + product._id)
+            items.appendChild(baliseA);
+
+            let baliseArticle = document.createElement("article")
+            baliseA.appendChild(baliseArticle);
+
+            let baliseImg = document.createElement("img")
+            baliseImg.setAttribute("src", product.imageUrl)
+            baliseImg.setAttribute("alt", product.altTxt)
+            baliseArticle.appendChild(baliseImg);
+
+            let baliseH3 = document.createElement("h3")
+            baliseH3.setAttribute("class", "productName")
+            baliseH3.innerText = product.name
+            baliseArticle.appendChild(baliseH3);
+
+            let baliseDescription = document.createElement("p")
+            baliseDescription.setAttribute("class", "productDescription")
+            baliseDescription.innerText = product.description
+            baliseArticle.appendChild(baliseDescription);
+
         });
-        document
-            .getElementById("items")
-            .innerHTML = data1;
+
     }).catch((error) => {
         console.log(error);
     })
