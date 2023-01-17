@@ -63,13 +63,14 @@ button.addEventListener('click', (event) => {
     let baliseCouleur = document.querySelector("#colors");
     let choixCouleur = baliseCouleur.value;
     let productQuantity = document.querySelector("#quantity").value;
+
     console.log(`couleur : ${choixCouleur} - Quantité :  ${productQuantity}`);
 
     //creation du produit qui sera ajouté au panier
     let article = {
         id: urlId,
         color: choixCouleur,
-        quantity: parseInt(productQuantity)
+        quantity: parseInt(productQuantity),
     };
 
     //vérife que l'user a bien séléctionné une couleur et une quantité comprise entre 1 et 100
