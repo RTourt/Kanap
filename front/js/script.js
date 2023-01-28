@@ -1,18 +1,18 @@
-//via fetch => requête http  
-//.then => fonction avec en paramètre la réponse data et json() => converti la réponse au format json
-//les données json doivent encore être traitées, j'ajoute une autre instruction .then avec une fonction qui a en argument completeData
-//la boucle forEach => affiche les éléments de mon tableau et je place en paramêtre product
-//le paramètre product va me permettre d'appeller une fonction sur chaque élément de mon un tableau élément
-
+// utilisation de la methode fetch pour faire ma requête http avec le chemin de la ressource en argument
+// fetch retourne une promesse contenant une reponse et on indique le format de la reponse souhaité avec .json
+// les données json doivent encore être traitées, on ajoute une autre instruction .then avec une fonction qui a en argument completeData
+// la boucle forEach affiche les éléments de mon tableau et on place en paramêtre product
+// product va me permettre d'appeller une fonction sur chaque élément de mon tableau d'éléments
 fetch("http://localhost:3000/api/products")
     .then((data) => {
         return data.json();
-    }).then((completeData) => {
+    })
+    .then((completeData) => {
         console.log(completeData);
         var items = document.getElementById("items");
 
         completeData.forEach(function (product) {
-            console.log(product);
+            // console.log(product);
 
             let baliseA = document.createElement("a")
             baliseA.setAttribute("href", "./product.html?id=" + product._id);
@@ -37,7 +37,7 @@ fetch("http://localhost:3000/api/products")
             baliseArticle.appendChild(baliseDescription);
 
         });
-
+        // dans le bloc catch, on traite les erreurs et on affiche l'erreur rencontrée si on en rencontre une
     }).catch((error) => {
         console.log(error);
     })

@@ -1,36 +1,40 @@
+// variable contenant la chaine des paramètres de l'url
 var queryStringUrlId = window.location.search;
 
-//je récupere l'id de l'url avec .get
+// récupération de l'id de l'url avec .get
 let urlSearchParams = new URLSearchParams(queryStringUrlId);
+let id = urlSearchParams.get("id");
 
-let urlId = urlSearchParams.get("id");
-var totalPrice = 0;
+// déclaration d'un prix total à 0 par defaut
+let totalPrice = 0;
 
-
+// panierStorage contient la clé panier qui est dans le localStorage et on applique un JSON.parse() pour le convertir en objet JS
+// getItem retourne la valeur associée à la clé panier dans le localStorage
+// forEach permet d'itérer sur les propriétés de panierStorage (array) 
 let panierStorage = JSON.parse(localStorage.getItem("panier"));
 panierStorage.forEach((panier, index) => {
-    console.log(panierStorage);
+    console.table(panierStorage);
 
-
+    // récupération des informations des produits du panier via l'id dans le localStorage 
     fetch(`http://localhost:3000/api/products/${panierStorage[index].id}`)
         .then((data) => {
             return data.json();
         }).then((completeData) => {
             console.log(completeData);
 
-            //affiche panier
+            // déclaration des variables pour rendre visible les éléments du panier
             let articlePanier = document.querySelector("#cart__items");
 
             let baliseArticle = document.createElement("article");
             baliseArticle.className = "cart__item";
             baliseArticle.setAttribute("data-id", panier.id);
             baliseArticle.setAttribute("data-color", panier.color);
-            console.log(baliseArticle.setAttribute("data-id", panier.id));
             articlePanier.appendChild(baliseArticle);
+            // console.log("data-color", panier.color);
 
             let divPanierImg = document.createElement("div");
-            baliseArticle.appendChild(divPanierImg);
             divPanierImg.className = "cart__item__img";
+            baliseArticle.appendChild(divPanierImg);
 
             let baliseImg = document.createElement("img");
             baliseImg.src = completeData.imageUrl;
@@ -38,40 +42,41 @@ panierStorage.forEach((panier, index) => {
             divPanierImg.appendChild(baliseImg);
 
             let divPanierContenu = document.createElement("div");
-            baliseArticle.appendChild(divPanierContenu);
             divPanierContenu.className = "cart__item__content";
+            baliseArticle.appendChild(divPanierContenu);
 
             let divPanierContenuDescription = document.createElement("div");
-            divPanierContenu.appendChild(divPanierContenuDescription);
             divPanierContenuDescription.className = "cart__item__content__description";
+            divPanierContenu.appendChild(divPanierContenuDescription);
 
             let baliseH2 = document.createElement("h2");
-            divPanierContenuDescription.appendChild(baliseH2);
             baliseH2.innerText = completeData.name;
+            divPanierContenuDescription.appendChild(baliseH2);
 
             let baliseCouleur = document.createElement("p");
-            divPanierContenuDescription.appendChild(baliseCouleur);
-            //  baliseCouleur.textContent = panierStorage[index].color;
             baliseCouleur.textContent = panier.color;
+            divPanierContenuDescription.appendChild(baliseCouleur);
 
             let balisePrice = document.createElement("p");
-            divPanierContenuDescription.appendChild(balisePrice);
             balisePrice.innerText = completeData.price + " €";
-            totalPrice += completeData.price * panier.quantity;
+            divPanierContenuDescription.appendChild(balisePrice);
 
+            // calcul pour obtenir le prix total du panier
+            // le prix unitaire de l'article * la quantité d'article dans le panier et le resultat de chaque article se cumule dans le prix total 
+            totalPrice += completeData.price * panier.quantity;
+            //console.log(totalPrice)
 
             let divParamContenu = document.createElement("div");
-            baliseArticle.appendChild(divParamContenu);
             divParamContenu.className = "cart__item__content__settings";
+            baliseArticle.appendChild(divParamContenu);
 
             let divParamContenuQuantite = document.createElement("div");
-            divParamContenu.appendChild(divParamContenuQuantite);
             divParamContenuQuantite.className = "cart__item__content__settings__quantity";
+            divParamContenu.appendChild(divParamContenuQuantite);
 
             let baliseQuantite = document.createElement("p");
             baliseQuantite.textContent = "Qté: ";
             divParamContenuQuantite.appendChild(baliseQuantite);
-
 
             let inputQuantity = document.createElement("input");
             inputQuantity.value = panier.quantity;
@@ -81,50 +86,49 @@ panierStorage.forEach((panier, index) => {
             inputQuantity.setAttribute("min", "1");
             inputQuantity.setAttribute("max", "100");
             divParamContenuQuantite.appendChild(inputQuantity);
-            inputQuantity.addEventListener("change", function () {
-                panierStorage[index].quantity = inputQuantity.value;
-                localStorage.setItem("panier", JSON.stringify(panierStorage));
-                alert("la quantité a été modifier");
-                window.location.href = "cart.html";
-            })
-
 
 
             let divParamContenuEffacer = document.createElement("div");
-            divParamContenu.appendChild(divParamContenuEffacer);
             divParamContenuEffacer.className = "cart__item__content__settings__delete";
+            divParamContenu.appendChild(divParamContenuEffacer);
 
             let baliseEffacer = document.createElement("p");
             baliseEffacer.className = "deleteItem";
             baliseEffacer.textContent = "Supprimer";
             divParamContenuEffacer.appendChild(baliseEffacer);
+
+            // pour effectuer la suppression de l'article lors du click via splice et setItem met à jour le panier
             baliseEffacer.addEventListener("click", function () {
                 panierStorage.splice(index, 1);
                 localStorage.setItem("panier", JSON.stringify(panierStorage));
-                alert("ce produit a été supprimer du panier");
+                alert("Le produit a été supprimé du panier");
+                window.location.href = "cart.html";
+            })
+
+            // pour modifier la quantité de l'article
+            inputQuantity.addEventListener("change", function () {
+                panierStorage[index].quantity = parseInt(inputQuantity.value);
+                localStorage.setItem("panier", JSON.stringify(panierStorage));
+                alert("La quantité a été modifiée");
                 window.location.href = "cart.html";
             })
 
             let spanQuantity = document.getElementById("totalQuantity");
             spanQuantity.innerText = recupTotalQuantity();
-
+            console.log(recupTotalQuantity());
 
             let spanPrice = document.getElementById("totalPrice");
             spanPrice.innerText = totalPrice;
             console.log(spanPrice.innerText);
 
 
-
-
         }).catch((error) => {
             console.log(error);
         })
 
-
-
-    //je recupere le contenu de la clé panier dans une variable panier
-    //si la donnée n'existe pas => null alors je return un panier vide (tableau vide) 
-    //sinon panier existe, je retourne mon panier et JSON.parse() transforme la chaine de caractere en objet ou tableau
+    // on recupere le contenu de la clé panier dans une variable panier
+    // si la donnée n'existe pas => null alors je return un panier vide (tableau vide) 
+    // sinon panier existe, je retourne mon panier en objet JS
     function recupPanier() {
         let panier = localStorage.getItem("panier");
         if (panier == null) {
@@ -134,7 +138,8 @@ panierStorage.forEach((panier, index) => {
         }
     }
 
-    //pour retourner la quantité de produit du panier
+    // pour retourner la quantité totale de produit du panier
+    // la boucle for of parcourt le panier, a chaque quantité de produit trouvé, la quantité s'additionne puis affecte la variable nombre 
     function recupTotalQuantity() {
         let panier = recupPanier();
         let nombre = 0;
@@ -144,144 +149,199 @@ panierStorage.forEach((panier, index) => {
         return nombre;
     }
 
-
-    /************************************************************** */
-
-
-    /**************************formulaire de commande************************************* */
-
-    //selection de btn envoyer formulaire
-    const btnEnvoyerForm = document.querySelector("#order");
-    console.log(btnEnvoyerForm);
-
-    //add eventListener
-    btnEnvoyerForm.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        //recup des valeurs du formulaire
-        const formValues = {
-            prenom: document.querySelector("#firstName").value,
-            nom: document.querySelector("#lastName").value,
-            adresse: document.querySelector("#address").value,
-            ville: document.querySelector("#city").value,
-            email: document.querySelector("#email").value,
-        };
-
-
-        //mettre l'objet formValues dans le localStorage
-        localStorage.setItem("formValues", JSON.stringify(formValues));
-
-
-        console.log(formValues);
-
-        //mettre les values du form et mettre les produits select dans un objet a envoyer au server
-        const aEnvoyer = {
-            panierStorage,
-            formValues
-        }
-        console.log(aEnvoyer);
-
-
-
-    })
-
-    /*************************formulaire validation******************************** */
-    /*
-        let baliseForm = document.createElement('form');
-        baliseForm.setAttribute("class", "cart_order__form");
-    
-        let divFormPanierCommande = document.createElement('div');
-        divFormPanierCommande.setAttribute("class", "cart__order__form__question");
-        baliseForm.appendChild(divFormPanierCommande);
-    
-        let divBtnFormPanierCommande = document.createElement('div');
-        divBtnFormPanierCommande.setAttribute("class", "cart__order__form__submit");
-        baliseForm.appendChild(divBtnFormPanierCommande);
-    
-        let inputPrenom = document.createElement("input");
-        inputPrenom.setAttribute("name", "firstName");
-        divFormPanierCommande.appendChild(inputPrenom);
-    
-        let inputNom = document.createElement("input");
-        inputNom.setAttribute("name", "lastName");
-        divFormPanierCommande.appendChild(inputNom);
-    
-        let inputAdresse = document.createElement("input");
-        inputAdresse.setAttribute("name", "address");
-        divFormPanierCommande.appendChild(inputAdresse);
-    
-        let inputVille = document.createElement("input");
-        inputVille.setAttribute("name", "city");
-        divFormPanierCommande.appendChild(inputVille);
-    
-        let inputEmail = document.createElement("input");
-        inputEmail.setAttribute("name", "email");
-        divFormPanierCommande.appendChild(inputEmail);
-    
-        let msgErrPrenom = document.createElement("p");
-        msgErrPrenom.setAttribute("id", "firstNameErrorMsg");
-        divFormPanierCommande.appendChild(msgErrPrenom);
-    
-        let msgErrNom = document.createElement("p");
-        msgErrNom.setAttribute("id", "lastNameErrorMsg");
-        divFormPanierCommande.appendChild(msgErrNom);
-    
-        let msgErrAdresse = document.createElement("p");
-        msgErrAdresse.setAttribute("id", "addressErrorMsg");
-        divFormPanierCommande.appendChild(msgErrAdresse);
-    
-        let msgErrVille = document.createElement("p");
-        msgErrVille.setAttribute("id", "cityErrorMsg");
-        divFormPanierCommande.appendChild(msgErrVille);
-    
-        let msgErrEmail = document.createElement("p");
-        msgErrEmail.setAttribute("id", "emailErrorMsg");
-        divFormPanierCommande.appendChild(msgErrEmail);
-    
-        let inputCommander = document.createElement("input");
-        inputCommander.setAttribute("id", "order");
-        divBtnFormPanierCommande.appendChild(inputCommander);
-    
-        console.log(baliseForm);
-        console.log(baliseForm.email);
-    */
-
-
-    //ecouter la modif de l'email
-    baliseForm.email.addEventListener("change", function () {
-        validEmail(this);
-    });
-
-    const validEmail = function (inputEmail) {
-        //creation de la regExp pour la validation de l'email
-        let emailRegExp = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$', 'g');
-
-        let p = inputEmail.nextElementSibling;
-
-        //test de l'expresion reguliere
-        if (emailRegExp.test(inputEmail.value)) {
-            p.innerHTML = "Adresse Valide";
-            p.classList.remove('text-danger')
-            p.classList.add('text-success')
-        } else {
-            p.innerHTML = "Adresse Non Valide";
-            p.classList.remove('text-success')
-            p.classList.add('text-danger')
-        }
-        console.log(p)
-    }
-    //recuper et detect le click pour envoyer le form, 
-    //definir une variable par champ regexp 
-    //definir une variabl par valeur de chaque input
-    //faire 5 if else : pour test le prenom avec regexp prenom, puis le nom, etc..
-    //si tout est bon, on  creer un object qui contient le panier et les info du form
-    //envoyer cette object sur l'api (fetch) sur url /order
-    //recup de l'order id que l'on doit afficher sur la derniere page
-
-
-
-
-
 })
+
+/*************************formulaire de validation de commande**************************** */
+
+// selection de btn envoyer formulaire
+const btnEnvoyerForm = document.querySelector("#order");
+
+
+// creation de la regEx pour la validation des champs         
+let regExPrenomNomVille = new RegExp('^[a-zA-Z-]{2,30}$');
+let regExAdresse = new RegExp(`^[a-zéèçàA-Z0-9.-_ ]{2,50}$`);
+let regExEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
+
+
+// déclaration d'une variable pour chaque balise input et chaque balise message d'erreur
+let inputPrenom = document.getElementById("firstName");
+let messErrPrenom = document.getElementById("firstNameErrorMsg");
+
+let inputNom = document.getElementById("lastName");
+let messErrNom = document.getElementById("lastNameErrorMsg");
+
+let inputAdresse = document.getElementById("address");
+let messErrAdresse = document.getElementById("addressErrorMsg");
+
+let inputVille = document.getElementById("city");
+let messErrVille = document.getElementById("cityErrorMsg");
+
+let inputEmail = document.getElementById("email");
+let messErrEmail = document.getElementById("emailErrorMsg");
+
+
+
+// création de fonction de validation pour chaque champ avec myInput en argument, .test() vérifie la correspondance entre le regEx et le champ
+// si le champ respecte le regEx alors pas de message d'erreur, sinon on affiche un message d'erreur
+// controle de validité du prenom
+function prenomControle(myInput) {
+    if (regExPrenomNomVille.test(myInput)) {
+        // console.log("ok");        
+        messErrPrenom.textContent = "";
+        return true;
+    } else {
+        // console.log("ko");
+        messErrPrenom.textContent = "Votre prenom n'est pas valide";
+        return false;
+    }
+}
+
+// controle de validité du prenom
+function nomControle(myInput) {
+    if (regExPrenomNomVille.test(myInput)) {
+        messErrNom.textContent = "";
+        return true;
+    } else {
+        messErrNom.textContent = "Votre nom n'est pas valide";
+        return false;
+    }
+}
+
+// controle de validité de la ville
+function villeControle(myInput) {
+    if (regExPrenomNomVille.test(myInput)) {
+        messErrVille.textContent = "";
+        return true;
+    } else {
+        messErrVille.textContent = "Votre ville n'est pas valide";
+        return false;
+    }
+}
+
+// controle de validité de la ville
+function adresseControle(myInput) {
+    if (regExAdresse.test(myInput)) {
+        messErrAdresse.textContent = "";
+        return true;
+    } else {
+        messErrAdresse.textContent = "Votre adresse n'est pas valide";
+        return false;
+    }
+}
+
+// controle de validité de la ville
+function emailControle(myInput) {
+    if (regExEmail.test(myInput)) {
+        console.log("ok")
+        messErrEmail.textContent = "";
+        return true;
+    } else {
+        console.log("ko")
+        messErrEmail.textContent = "Votre email n'est pas valide";
+        return false;
+    }
+}
+
+// détecter le click hors champs et activation des fonctions de validation
+inputPrenom.addEventListener("change", function () {
+    prenomControle(this.value);
+});
+
+inputNom.addEventListener("change", function () {
+    nomControle(this.value);
+});
+
+inputVille.addEventListener("change", function () {
+    villeControle(this.value);
+});
+
+inputAdresse.addEventListener("change", function () {
+    adresseControle(this.value);
+});
+
+inputEmail.addEventListener("change", function () {
+    emailControle(this.value);
+});
+
+
+
+// détécter le click pour l'envoi du formulaire
+btnEnvoyerForm.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    // recup des valeurs de chaque champ du formulaire
+    const formValues = {
+        firstName: document.querySelector("#firstName").value,
+        lastName: document.querySelector("#lastName").value,
+        address: document.querySelector("#address").value,
+        city: document.querySelector("#city").value,
+        email: document.querySelector("#email").value,
+    };
+
+
+    // declaration d'une variable par input
+    let prenom = formValues.firstName;
+    let nom = formValues.lastName;
+    let adresse = formValues.address;
+    let ville = formValues.city;
+    let mail = formValues.email;
+    // console.log(ville)
+
+
+    // tableau pour stocker les id des produits
+    let productId = [];
+    for (let i = 0; i < panierStorage.length; i++) {
+        productId.push(panierStorage[i].id)
+    }
+    //console.log(productId)
+
+    // création d'un objet contenant les info du formulaire et les produits du panier
+    let commandeObjet = {
+        contact: formValues,
+        products: productId,
+    }
+
+    // options du fetch
+    let optionsFetch = {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(commandeObjet)
+    }
+
+
+    // controle de validité du formulaire avant l'envoie dans le local storage
+    // vérifie si le panier est vide et si les input sont valid. Si tout est ok alors j'envoie le formulaire
+    if (commandeObjet.products.length == 0) {
+        alert("Votre paner est vide")
+    } else if (prenomControle(prenom) == true && nomControle(nom) == true && villeControle(ville) == true && adresseControle(adresse) == true && emailControle(mail) == true) {
+
+        // mettre l'objet formValues dans le localStorage
+        localStorage.setItem("formValues", JSON.stringify(formValues))
+        // console.log(formValues);
+        console.log(commandeObjet)
+
+        // envoie de l'object sur l'api via fetch() sur l'url/order
+        // récup les options et le tableau avec contact + id que l'on doit afficher sur la dernière page
+        // clear permet de supprimer tous les objets du localStorage
+        // document.location.href contient le chemin de la page de confirmation de la commande vers laquel on sera redirigé
+        fetch(`http://localhost:3000/api/products/order`, optionsFetch)
+            .then((data) => {
+                return data.json();
+            })
+            .then((order) => {
+                localStorage.clear();
+                document.location.href = `./confirmation.html?orderId=${order.orderId}`;
+            })
+            .catch((error) => {
+                alert("Aucune information retrouvée sur l'API")
+            })
+    } else {
+        alert("Le formulaire est incomplet ou incorrect")
+    }
+})
+
+
 
 
