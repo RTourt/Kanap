@@ -8,8 +8,7 @@ let id = urlSearchParams.get("id");
 // déclaration d'un prix total à 0 par defaut
 let totalPrice = 0;
 
-// panierStorage contient la clé panier qui est dans le localStorage et on applique un JSON.parse() pour le convertir en objet JS
-// getItem retourne la valeur associée à la clé panier dans le localStorage
+// panierStorage contient la clé panier qui est dans le localStorage, on applique JSON.parse() pour le convertir en objet JS et getItem retourne la valeur associée à la clé panier dans le localStorage
 // forEach permet d'itérer sur les propriétés de panierStorage (array) 
 let panierStorage = JSON.parse(localStorage.getItem("panier"));
 panierStorage.forEach((panier, index) => {
@@ -61,10 +60,8 @@ panierStorage.forEach((panier, index) => {
             balisePrice.innerText = completeData.price + " €";
             divPanierContenuDescription.appendChild(balisePrice);
 
-            // calcul pour obtenir le prix total du panier
-            // le prix unitaire de l'article * la quantité d'article dans le panier et le resultat de chaque article se cumule dans le prix total 
+            // calcul pour obtenir le prix total du panier : le prix unitaire de l'article * la quantité d'article dans le panier et le resultat de chaque article se cumule dans le prix total 
             totalPrice += completeData.price * panier.quantity;
-            //console.log(totalPrice)
 
             let divParamContenu = document.createElement("div");
             divParamContenu.className = "cart__item__content__settings";
@@ -97,7 +94,7 @@ panierStorage.forEach((panier, index) => {
             baliseEffacer.textContent = "Supprimer";
             divParamContenuEffacer.appendChild(baliseEffacer);
 
-            // pour effectuer la suppression de l'article lors du click via splice et setItem met à jour le panier
+            // suppression de l'article lors du click avec splice 
             baliseEffacer.addEventListener("click", function () {
                 panierStorage.splice(index, 1);
                 localStorage.setItem("panier", JSON.stringify(panierStorage));
@@ -105,11 +102,14 @@ panierStorage.forEach((panier, index) => {
                 window.location.href = "cart.html";
             })
 
-            // pour modifier la quantité de l'article
+            // pour modifier la quantité de l'article, condition pour que l'utilisateur ne puisse pas mettre de valeur négative, <= à 1 ou >= à 101.
             inputQuantity.addEventListener("change", function () {
+                if (inputQuantity.value <= 1 || inputQuantity.value >= 101) {
+                    alert("Selectionner une quantité entre 1 et 100")
+                    inputQuantity.value = 1;
+                }
                 panierStorage[index].quantity = parseInt(inputQuantity.value);
                 localStorage.setItem("panier", JSON.stringify(panierStorage));
-                alert("La quantité a été modifiée");
                 window.location.href = "cart.html";
             })
 
@@ -127,8 +127,7 @@ panierStorage.forEach((panier, index) => {
         })
 
     // on recupere le contenu de la clé panier dans une variable panier
-    // si la donnée n'existe pas => null alors je return un panier vide (tableau vide) 
-    // sinon panier existe, je retourne mon panier en objet JS
+    // si la donnée n'existe pas, on retourne un tableau, sinon on retourne le panier en objet JS
     function recupPanier() {
         let panier = localStorage.getItem("panier");
         if (panier == null) {
@@ -139,7 +138,7 @@ panierStorage.forEach((panier, index) => {
     }
 
     // pour retourner la quantité totale de produit du panier
-    // la boucle for of parcourt le panier, a chaque quantité de produit trouvé, la quantité s'additionne puis affecte la variable nombre 
+    // la boucle for of parcours le panier, à chaque quantité de produit trouvé, la quantité s'additionne et affecte la variable nombre 
     function recupTotalQuantity() {
         let panier = recupPanier();
         let nombre = 0;
@@ -153,11 +152,11 @@ panierStorage.forEach((panier, index) => {
 
 /*************************formulaire de validation de commande**************************** */
 
-// selection de btn envoyer formulaire
+// déclaration du bouton pour envoyer la commande
 const btnEnvoyerForm = document.querySelector("#order");
 
 
-// creation de la regEx pour la validation des champs         
+// creation des regEx pour la validation des champs         
 let regExPrenomNomVille = new RegExp('^[a-zA-Z-]{2,30}$');
 let regExAdresse = new RegExp(`^[a-zéèçàA-Z0-9.-_ ]{2,50}$`);
 let regExEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
@@ -181,7 +180,7 @@ let messErrEmail = document.getElementById("emailErrorMsg");
 
 
 
-// création de fonction de validation pour chaque champ avec myInput en argument, .test() vérifie la correspondance entre le regEx et le champ
+// création de fonction de validation pour chaque champ avec myInput en argument, .test() vérifie la correspondance entre le regEx et la valeur saisit dans le champ par l'utilisateur
 // si le champ respecte le regEx alors pas de message d'erreur, sinon on affiche un message d'erreur
 // controle de validité du prenom
 function prenomControle(myInput) {
@@ -242,7 +241,7 @@ function emailControle(myInput) {
     }
 }
 
-// détecter le click hors champs et activation des fonctions de validation
+// détection du clic lorsque le champs perd son focus et activation des fonctions de control 
 inputPrenom.addEventListener("change", function () {
     prenomControle(this.value);
 });
@@ -265,7 +264,7 @@ inputEmail.addEventListener("change", function () {
 
 
 
-// détécter le click pour l'envoi du formulaire
+// détécter le clic pour l'envoi du formulaire
 btnEnvoyerForm.addEventListener("click", (event) => {
     event.preventDefault();
 
@@ -279,7 +278,7 @@ btnEnvoyerForm.addEventListener("click", (event) => {
     };
 
 
-    // declaration d'une variable par input
+    // declaration de variables pour chaque input
     let prenom = formValues.firstName;
     let nom = formValues.lastName;
     let adresse = formValues.address;
@@ -293,15 +292,14 @@ btnEnvoyerForm.addEventListener("click", (event) => {
     for (let i = 0; i < panierStorage.length; i++) {
         productId.push(panierStorage[i].id)
     }
-    //console.log(productId)
 
-    // création d'un objet contenant les info du formulaire et les produits du panier
+    // création d'un objet contenant les infos du formulaire et les produits du panier
     let commandeObjet = {
         contact: formValues,
         products: productId,
     }
 
-    // options du fetch
+    // création d'un objet avec options du fetch
     let optionsFetch = {
         method: 'POST',
         headers: {
@@ -312,7 +310,7 @@ btnEnvoyerForm.addEventListener("click", (event) => {
 
 
     // controle de validité du formulaire avant l'envoie dans le local storage
-    // vérifie si le panier est vide et si les input sont valid. Si tout est ok alors j'envoie le formulaire
+    // vérification du panier s'il est vide et si les input sont tous valides. Si c'est ok alors on envoie le formulaire
     if (commandeObjet.products.length == 0) {
         alert("Votre paner est vide")
     } else if (prenomControle(prenom) == true && nomControle(nom) == true && villeControle(ville) == true && adresseControle(adresse) == true && emailControle(mail) == true) {
@@ -322,10 +320,9 @@ btnEnvoyerForm.addEventListener("click", (event) => {
         // console.log(formValues);
         console.log(commandeObjet)
 
-        // envoie de l'object sur l'api via fetch() sur l'url/order
-        // récup les options et le tableau avec contact + id que l'on doit afficher sur la dernière page
-        // clear permet de supprimer tous les objets du localStorage
-        // document.location.href contient le chemin de la page de confirmation de la commande vers laquel on sera redirigé
+        // envoie de l'object sur l'api avec fetch() sur l'url/order
+        // récupèration avec optionsFetch de la config du fetch, dont les infos contenu dans commandeObjet + id que l'on doit afficher sur la dernière page
+        // clear permet de supprimer tous les objets du localStorage et document.location.href contient le chemin de la page de confirmation de la commande
         fetch(`http://localhost:3000/api/products/order`, optionsFetch)
             .then((data) => {
                 return data.json();
